@@ -1,11 +1,12 @@
 *** Settings ***
 Resource    ../Common/imports.robot
+Resource    ../../Keywords/Customer/imports.robot
 
 *** Variables ***
 # Login Page Locators
 ${LOGIN_EMAIL_FIELD}       id=Email
 ${LOGIN_PASSWORD_FIELD}    id=Password
-${LOGIN_SUBMIT_BUTTON}     xpath=//input[@type='submit']
+${LOGIN_SUBMIT_BUTTON}     xpath=//input[@class='button-1 login-button']
 ${LOGIN_FORM}              xpath=//div[@class='form-fields']
 ${REMEMBER_ME_CHECKBOX}    id=RememberMe
 ${FORGOT_PASSWORD_LINK}    xpath=//span[@class='forgot-password']
@@ -15,7 +16,7 @@ ${ERROR_MESSAGE}           xpath=//div[@class='message-error']
 # Page Elements
 ${LOGIN_PAGE_TITLE}        xpath=//div[@class='page-title']
 ${LOGIN_FORM_CONTAINER}    xpath=//div[@class='page login-page']
-${REGISTER_BUTTON}         css=a[href*='register']
+${REGISTER_BUTTON}         xpath=//input[@class='button-1 register-button']
 
 *** Keywords ***
 Verify Login Page Loaded
@@ -55,7 +56,7 @@ Verify Login Error Message
 
 Verify Login Success
     [Documentation]    Verify login was successful
-    3_UtilityFunction.Verify Current URL Contains    dashboard
+    3_UtilityFunction.Verify Current URL Contains    https://demowebshop.tricentis.com/
 
 Clear Login Form
     [Documentation]    Clear all fields in login form
@@ -63,9 +64,9 @@ Clear Login Form
     Clear Element Text    ${LOGIN_PASSWORD_FIELD}
 
 Get Login Form Validation Messages
-    [Documentation]    Get all validation messages from form
+    [Documentation]    Get all validation messages from login form
     ${messages}=    Create List
-    ${error_elements}=    Get WebElements    css=.field-error, css=.validation-error
+    ${error_elements}=    Get WebElements    xpath=//div[@class='validation-summary-errors']//span | //div[@class='validation-summary-errors']//li
     FOR    ${element}    IN    @{error_elements}
         ${text}=    Get Text    ${element}
         Append To List    ${messages}    ${text}

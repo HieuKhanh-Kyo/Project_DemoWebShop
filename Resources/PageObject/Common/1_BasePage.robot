@@ -1,6 +1,7 @@
 *** Settings ***
 Library    SeleniumLibrary
 Library    Collections
+
 Resource   ../../../Config/imports.robot
 
 *** Variables ***

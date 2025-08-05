@@ -3,14 +3,15 @@ Library    SeleniumLibrary
 Library    DateTime
 
 Resource   ../../../Config/imports.robot
-
+Resource   ./2_BrowserNavigation.robot
+#Resource   ../../PageObject/Customer/2_LoginPage.robot
 
 *** Keywords ***
 Open Application
     [Documentation]    Open browser and navigate to application
     2_BrowserConfig.Setup Browser
-    Go To                       ${URL}
-    Wait For Page To Load
+    Go To   ${URL}
+    1_CommonWeb.Wait For Page To Load
 
 Wait For Page To Load
     [Documentation]    Wait for page to completely load
@@ -44,3 +45,33 @@ Take Screenshot On Failure
 Close Application
     [Documentation]    Close browser and cleanup
     Close All Browsers
+
+## Enhanced Error Handling for Login
+#Wait For Login Form Load
+#    [Documentation]    Wait for login form to fully load with retry
+#    Wait Until Keyword Succeeds    30s    2s    Element Should Be Visible    ${LOGIN_FORM}
+#    Wait Until Keyword Succeeds    30s    2s    Element Should Be Enabled    ${LOGIN_SUBMIT_BUTTON}
+#
+#Handle Login Error
+#    [Documentation]    Handle various login error scenarios
+#    ${error_present}=    Run Keyword And Return Status    Element Should Be Visible    ${ERROR_MESSAGE}
+#    IF    ${error_present}
+#        ${error_text}=    Get Text    ${ERROR_MESSAGE}
+#        Log    Login Error: ${error_text}
+#        Take Screenshot On Failure    login_error
+#    END
+#
+#Retry Login On Failure
+#    [Documentation]    Retry login if it fails due to temporary issues
+#    [Arguments]    ${email}    ${password}    ${max_attempts}=3
+#    FOR    ${attempt}    IN RANGE    1    ${max_attempts + 1}
+#        ${status}=    Run Keyword And Return Status    Login With Valid Credentials    ${email}    ${password}
+#        IF    ${status}
+#            BREAK
+#        ELSE
+#            Log    Login attempt ${attempt} failed, retrying...
+#            Sleep    2s
+#            2_BrowserNavigation.Refresh Page
+#        END
+#    END
+#    Should Be True    ${status}    Login failed after ${max_attempts} attempts

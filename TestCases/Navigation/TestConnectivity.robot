@@ -2,7 +2,9 @@
 Documentation       Script Test Connect To Website
 
 Resource    ../../Resources/Keywords/Common/imports.robot
+Resource    ../../Resources/Keywords/Customer/imports.robot
 Resource    ../../Resources/PageObject/Common/imports.robot
+Resource    ../../Resources/PageObject/Customer/imports.robot
 
 Suite Setup         1_CommonWeb.Open Application
 Suite Teardown      1_CommonWeb.Close Application
@@ -26,3 +28,21 @@ Test Basic Navigation
     1_CommonWeb.Verify Page Title Contains    Register
 
 #Test Category Navigation
+
+
+Manual Login Verification
+    [Documentation]    Manual test of login functionality
+    [Tags]    manual    login   test
+
+    Navigate To Login Page
+
+    # Test valid login
+    Login With Valid Credentials
+    Take Screenshot With Custom Name    successful_login
+
+    Logout User
+
+    # Test invalid login
+    Navigate To Login Page
+    Login With Invalid Credentials    invalid@test.com    wrongpass    Login was unsuccessful
+    Take Screenshot With Custom Name    invalid_login
