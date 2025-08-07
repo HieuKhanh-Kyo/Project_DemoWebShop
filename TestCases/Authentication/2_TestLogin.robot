@@ -13,7 +13,7 @@ Suite Teardown      1_CommonWeb.Close Application
 
 *** Test Cases ***
 # 1. Invalid login
-TC-001 - Valid Login Success
+TC-LOGIN-001 - Valid Login Success
     [Documentation]    Test successful login with valid credentials
     [Tags]    TC-001    smoke    login    positive
 
@@ -30,7 +30,7 @@ TC-001 - Valid Login Success
 
     Log    Login test completed successfully
 
-TC-002 - Invalid Email Login
+TC-LOGIN-002 - Invalid Email Login
     [Documentation]    Test login with invalid email address
     [Tags]    TC-002    login    negative
 
@@ -47,7 +47,7 @@ TC-002 - Invalid Email Login
 
     Log    Invalid email login test completed successfully
 
-TC-003 - Invalid Password Login
+TC-LOGIN-003 - Invalid Password Login
     [Documentation]    Test login with invalid password
     [Tags]    TC-003    login    negative
 
@@ -64,7 +64,7 @@ TC-003 - Invalid Password Login
 
     Log    Invalid password login test completed successfully
 
-TC-004 - Invalid Email and Password Login
+TC-LOGIN-004 - Invalid Email and Password Login
     [Documentation]    Test login with both invalid email and password
     [Tags]    TC-004    login    negative
 
@@ -82,7 +82,7 @@ TC-004 - Invalid Email and Password Login
     Log    Invalid credentials login test completed successfully
 
 # Empty Field Validation
-TC-005 - Empty Email Field
+TC-LOGIN-005 - Empty Email Field
     [Documentation]    Test login with empty email field validation
     [Tags]    TC-005    login    validation    negative
 
@@ -101,7 +101,7 @@ TC-005 - Empty Email Field
 
     Log    Empty email field validation test completed successfully
 
-TC-006 - Empty Password Field
+TC-LOGIN-006 - Empty Password Field
     [Documentation]    Test login with empty password field validation
     [Tags]    TC-006    login    validation    negative
 
@@ -120,7 +120,7 @@ TC-006 - Empty Password Field
 
     Log    Empty password field validation test completed successfully
 
-TC-007 - Empty Email and Password Fields
+TC-LOGIN-007 - Empty Email and Password Fields
     [Documentation]    Test login with both email and password fields empty
     [Tags]    TC-007    login    validation    negative
 
@@ -139,7 +139,7 @@ TC-007 - Empty Email and Password Fields
     Log    Empty fields validation test completed successfully
 
 # 3. Forgot Password Functionality
-TC-008 - Forgot Password Link Navigation
+TC-LOGIN-008 - Forgot Password Link Navigation
     [Documentation]    Test forgot password link functionality and navigation
     [Tags]    TC-008    login    forgot-password
 
@@ -157,7 +157,7 @@ TC-008 - Forgot Password Link Navigation
 
     Log    Forgot password link navigation test completed successfully
 
-TC-009 - Password Recovery Flow
+TC-LOGIN-009 - Password Recovery Flow
     [Documentation]    Test complete password recovery functionality
     [Tags]    TC-009    login    forgot-password
 
@@ -175,7 +175,7 @@ TC-009 - Password Recovery Flow
     Log    Password recovery flow test completed successfully
 
 # 4. Remember Me Functionality
-TC-010 - Remember Me Checkbox Functionality
+TC-LOGIN-010 - Remember Me Checkbox Functionality
     [Documentation]    Test remember me checkbox basic functionality
     [Tags]    TC-010    login    remember-me
 
@@ -209,7 +209,7 @@ TC-010 - Remember Me Checkbox Functionality
     Log    Remember me checkbox functionality test completed successfully
 
 # 5. Error Message Validation
-TC-011 - Error Message Display and Content
+TC-LOGIN-011 - Error Message Display and Content
     [Documentation]    Test error message display and content accuracy
     [Tags]    TC-011    login    error-messages
     1_Authentication.Navigate To Login Page
