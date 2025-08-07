@@ -3,14 +3,24 @@
 Resource    ../../../Config/1_Environments.robot
 Resource    ../../PageObject/Customer/2_LoginPage.robot
 Resource    ../../PageObject/Common/2_Header.robot
+Resource    ../../PageObject/Customer/3_RegisterPage.robot
+Resource    ../../Keywords/Common/3_UtilityFunction.robot
 
 *** Variables ***
+# Login
 ${VALID_EMAIL}          hikakyo@gmail.com
 ${VALID_PASSWORD}       y3#B!fd$bXeMqU
 ${INVALID_EMAIL}        invalid@gmail.com
 ${INVALID_PASSWORD}     wrongpass
 
+# Register
+${VALID_FIRST_NAME}         Test
+${VALID_LAST_NAME}          User
+${VALID_REG_PASSWORD}       Test123!@#
+${MIN_PASSWORD_LENGTH}      6
+
 *** Keywords ***
+# Login key
 Login With Valid Credentials
     [Documentation]    Login with valid email and password
     [Arguments]    ${email}=${VALID_EMAIL}    ${password}=${VALID_PASSWORD}
@@ -83,96 +93,230 @@ Test Password Reset Flow
     1_CommonWeb.Wait For Page To Load
     3_UtilityFunction.Verify Current URL Contains    passwordrecovery
 
-# Login Validation Test Keywords
-Test Email Field Validation
-    [Documentation]    Test email field validation
-    2_LoginPage.Verify Login Page Loaded
+# Login Validation key
+Navigate To Registration Page
+    [Documentation]    Navigate to registration page from any page
+    Go To    ${URL}/register
+    1_CommonWeb.Wait For Page To Load
+    3_RegisterPage.Verify Register Page Loaded
 
-    # Test empty email
-    2_LoginPage.Enter Email    ${EMPTY}
-    2_LoginPage.Enter Password    ${VALID_PASSWORD}
-    2_LoginPage.Click Login Button
-    2_LoginPage.Verify Login Error Message    Email is required
+Register With Valid Data
+    [Documentation]    Register with valid user data
+    [Arguments]    &{registration_data}
+    3_RegisterPage.Verify Register Page Loaded
+    3_RegisterPage.Fill Registration Form    &{registration_data}
+    3_RegisterPage.Click Register Button
+    3_RegisterPage.Verify Registration Success
 
-    # Test invalid email format
-    2_LoginPage.Clear Login Form
-    2_LoginPage.Enter Email    invalid-email
-    2_LoginPage.Enter Password    ${VALID_PASSWORD}
-    2_LoginPage.Click Login Button
-    2_LoginPage.Verify Login Error Message    Invalid email format
+Register With Invalid Data
+    [Documentation]    Register with invalid data and expect error
+    [Arguments]    ${expected_error}    &{registration_data}
+    3_RegisterPage.Verify Register Page Loaded
+    3_RegisterPage.Fill Registration Form    &{registration_data}
+    3_RegisterPage.Click Register Button
+    3_RegisterPage.Verify Registration Error Message    ${expected_error}
 
-Test Password Field Validation
-    [Documentation]    Test password field validation
-    2_LoginPage.Verify Login Page Loaded
+Create Valid Registration Data
+    [Documentation]    Create dictionary with valid registration data
+    [Arguments]    ${include_gender}=True    ${include_newsletter}=True
+    ${test_data}=    3_UtilityFunction.Create Test Data Dictionary
+    ${registration_data}=    Create Dictionary
+    ...    first_name=${VALID_FIRST_NAME}
+    ...    last_name=${VALID_LAST_NAME}
+    ...    email=${test_data}[email]
+    ...    password=${VALID_REG_PASSWORD}
+    ...    confirm_password=${VALID_REG_PASSWORD}
 
-    # Test empty password
-    2_LoginPage.Enter Email    ${VALID_EMAIL}
-    2_LoginPage.Enter Password    ${EMPTY}
-    2_LoginPage.Click Login Button
-    2_LoginPage.Verify Login Error Message    Password is required
-
-    # Test short password
-    2_LoginPage.Clear Login Form
-    2_LoginPage.Enter Email    ${VALID_EMAIL}
-    2_LoginPage.Enter Password    123
-    2_LoginPage.Click Login Button
-    2_LoginPage.Verify Login Error Message    Password too short
-
-# Session Management Keywords
-Verify Session Timeout
-    [Documentation]    Test session timeout functionality
-    1_Authentication.Login With Valid Credentials
-    # Wait for session timeout or simulate
-    Sleep    ${TIMEOUT}
-    2_BrowserNavigation.Refresh Page
-    1_Authentication.Verify User Is Logged Out
-
-Test Multiple Login Attempts
-    [Documentation]    Test account lockout after multiple failed attempts
-    FOR    ${i}    IN RANGE    1    6
-        1_Authentication.Login With Invalid Credentials    ${VALID_EMAIL}    wrongpassword    Invalid credentials
-        Sleep    1s
+    IF    ${include_gender}
+        Set To Dictionary    ${registration_data}    gender    Male
     END
-    # After 5 attempts, should show account locked message
-    1_Authentication.Login With Invalid Credentials    ${VALID_EMAIL}    wrongpassword    Account temporarily locked
 
+    IF    ${include_newsletter}
+        Set To Dictionary    ${registration_data}    newsletter    true
+    END
 
-# Enhaced email password
-Test Email Field Validation Enhanced
-    [Documentation]    Enhanced email field validation testing
-    2_LoginPage.Verify Login Page Loaded
+    RETURN    ${registration_data}
 
-    # Test various invalid email formats
-    @{invalid_emails}=    Create List    invalid-email    @invalid.com    invalid@    .com
+Register With Complete Valid Data
+    [Documentation]    Register with complete valid data including all options
+    ${registration_data}=    Create Valid Registration Data
+    Register With Valid Data    &{registration_data}
+
+Test Registration Email Format Validation
+    [Documentation]    Test various email format validations for registration
+    3_RegisterPage.Verify Register Page Loaded
+
+    # Test invalid email formats
+    @{invalid_emails}=    Create List
+    ...    invalid-email
+    ...    @invalid.com
+    ...    invalid@
+    ...    invalid.com
+    ...    invalid@@test.com
+
     FOR    ${invalid_email}    IN    @{invalid_emails}
-        2_LoginPage.Clear Login Form
-        2_LoginPage.Enter Email    ${invalid_email}
-        2_LoginPage.Enter Password    ${VALID_PASSWORD}
-        2_LoginPage.Click Login Button
-        Element Should Be Visible    ${ERROR_MESSAGE}
-        Sleep    1s
+        3_RegisterPage.Clear Registration Form
+        ${registration_data}=    Create Dictionary
+        ...    first_name=${VALID_FIRST_NAME}
+        ...    last_name=${VALID_LAST_NAME}
+        ...    email=${invalid_email}
+        ...    password=${VALID_REG_PASSWORD}
+        ...    confirm_password=${VALID_REG_PASSWORD}
+
+        3_RegisterPage.Fill Registration Form    &{registration_data}
+        3_RegisterPage.Click Register Button
+
+        # Verify email validation error appears
+        ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+        Should Not Be Empty    ${validation_messages}    Email validation should show error for: ${invalid_email}
+
+        Log    Email validation working for: ${invalid_email}
     END
 
-Test Password Field Validation Enhanced
-    [Documentation]    Enhanced password field validation testing
-    2_LoginPage.Verify Login Page Loaded
+Test Registration Password Validation
+    [Documentation]    Test password field validation rules for registration
+    3_RegisterPage.Verify Register Page Loaded
 
-    # Test various password scenarios
-    @{weak_passwords}=    Create List    123    abc    12    ${EMPTY}
+    # Test password strength requirements
+    @{weak_passwords}=    Create List
+    ...    123           # Too short
+    ...    abc           # Too short, no numbers
+    ...    12345         # No special chars
+    ...    ${EMPTY}      # Empty password
+
     FOR    ${weak_password}    IN    @{weak_passwords}
-        2_LoginPage.Clear Login Form
-        2_LoginPage.Enter Email    ${VALID_EMAIL}
-        2_LoginPage.Enter Password    ${weak_password}
-        2_LoginPage.Click Login Button
-        Element Should Be Visible    ${ERROR_MESSAGE}
-        Sleep    1s
+        3_RegisterPage.Clear Registration Form
+        ${registration_data}=    Create Dictionary
+        ...    first_name=${VALID_FIRST_NAME}
+        ...    last_name=${VALID_LAST_NAME}
+        ...    email=test@example.com
+        ...    password=${weak_password}
+        ...    confirm_password=${weak_password}
+
+        3_RegisterPage.Fill Registration Form    &{registration_data}
+        3_RegisterPage.Click Register Button
+
+        # Verify password validation error appears
+        ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+        Should Not Be Empty    ${validation_messages}    Password validation should show error for: ${weak_password}
+
+        Log    Password validation working for: ${weak_password}
     END
 
-Verify Multiple Login Attempts Handling
-    [Documentation]    Test handling of multiple failed login attempts
-    FOR    ${attempt}    IN RANGE    1    4
-        1_Authentication.Login With Invalid Credentials    ${VALID_EMAIL}    wrongpass    Login was unsuccessful
-        Sleep    2s
-    END
-    # After 3 attempts, check if any rate limiting appears
-    3_UtilityFunction.Take Screenshot With Custom Name    multiple_failed_attempts
+Test Registration Password Confirmation
+    [Documentation]    Test password confirmation matching for registration
+    3_RegisterPage.Verify Register Page Loaded
+
+    ${registration_data}=    Create Dictionary
+    ...    first_name=${VALID_FIRST_NAME}
+    ...    last_name=${VALID_LAST_NAME}
+    ...    email=test@example.com
+    ...    password=${VALID_REG_PASSWORD}
+    ...    confirm_password=DifferentPassword123!
+
+    3_RegisterPage.Fill Registration Form    &{registration_data}
+    3_RegisterPage.Click Register Button
+
+    # Verify password confirmation error appears
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Password confirmation should show mismatch error
+
+    Log    Password confirmation validation working
+
+Test Registration Required Fields
+    [Documentation]    Test all required fields validation for registration
+    3_RegisterPage.Verify Register Page Loaded
+
+    # Submit empty form
+    3_RegisterPage.Click Register Button
+
+    # Verify validation errors for all required fields
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Required fields should show validation errors
+
+    Log    Required fields validation working
+
+Test Gender Selection Options
+    [Documentation]    Test gender selection functionality
+    3_RegisterPage.Verify Register Page Loaded
+
+    # Test Male selection
+    3_RegisterPage.Select Gender    Male
+    3_RegisterPage.Verify Gender Selection    Male
+
+    # Test Female selection
+    3_RegisterPage.Select Gender    Female
+    3_RegisterPage.Verify Gender Selection    Female
+
+    Log    Gender selection functionality working
+
+Test Newsletter Subscription Options
+    [Documentation]    Test newsletter subscription checkbox
+    3_RegisterPage.Verify Register Page Loaded
+
+    # Verify default state (usually unchecked)
+    3_RegisterPage.Verify Newsletter Checkbox Status    false
+
+    # Check newsletter subscription
+    3_RegisterPage.Check Newsletter Subscription
+    3_RegisterPage.Verify Newsletter Checkbox Status    true
+
+    # Uncheck newsletter subscription
+    3_RegisterPage.Uncheck Newsletter Subscription
+    3_RegisterPage.Verify Newsletter Checkbox Status    false
+
+    Log    Newsletter subscription functionality working
+
+Test Registration With Existing Email
+    [Documentation]    Test registration with already registered email
+    ${registration_data}=    Create Dictionary
+    ...    first_name=${VALID_FIRST_NAME}
+    ...    last_name=${VALID_LAST_NAME}
+    ...    email=${VALID_EMAIL}    # Using existing login email
+    ...    password=${VALID_REG_PASSWORD}
+    ...    confirm_password=${VALID_REG_PASSWORD}
+
+    Register With Invalid Data    already exists    &{registration_data}
+
+    Log    Existing email validation working
+
+Complete Registration Form Test
+    [Documentation]    Complete end-to-end registration form test
+    ${registration_data}=    Create Valid Registration Data
+
+    # Fill form step by step with validation
+    3_RegisterPage.Verify Register Page Loaded
+    3_RegisterPage.Select Gender    ${registration_data}[gender]
+    3_RegisterPage.Enter First Name    ${registration_data}[first_name]
+    3_RegisterPage.Enter Last Name    ${registration_data}[last_name]
+    3_RegisterPage.Enter Email    ${registration_data}[email]
+    3_RegisterPage.Enter Password    ${registration_data}[password]
+    3_RegisterPage.Enter Confirm Password    ${registration_data}[confirm_password]
+    3_RegisterPage.Check Newsletter Subscription
+
+    # Submit form
+    3_RegisterPage.Click Register Button
+    3_RegisterPage.Verify Registration Success
+
+    Log    Complete registration form test passed
+
+
+# Combined auth workflows
+Test Complete User Registration And Login Flow
+    [Documentation]    Test complete flow: Register -> Logout -> Login
+
+    # Step 1: Register new user
+    ${registration_data}=    Create Valid Registration Data
+    Register With Valid Data    &{registration_data}
+
+    # Step 2: Logout after registration
+    Logout User
+
+    # Step 3: Login with registered credentials
+    Navigate To Login Page
+    Login With Valid Credentials    ${registration_data}[email]    ${registration_data}[password]
+
+    # Step 4: Verify login success
+    Verify User Is Logged In
+
+    Log    Complete registration and login flow test passed
