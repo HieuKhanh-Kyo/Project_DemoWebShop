@@ -3,7 +3,7 @@ Library    SeleniumLibrary
 Library    DateTime
 
 Resource   ../../../Config/imports.robot
-Resource   ./2_BrowserNavigation.robot
+#Resource   ./2_BrowserNavigation.robot
 #Resource   ../../PageObject/Customer/2_LoginPage.robot
 
 *** Keywords ***

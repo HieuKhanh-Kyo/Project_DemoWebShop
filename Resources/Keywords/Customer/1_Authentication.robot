@@ -1,7 +1,8 @@
 *** Settings ***
 
-Resource    ../Common/imports.robot
-Resource    ../../PageObject/Customer/imports.robot
+Resource    ../../../Config/1_Environments.robot
+Resource    ../../PageObject/Customer/2_LoginPage.robot
+Resource    ../../PageObject/Common/2_Header.robot
 
 *** Variables ***
 ${VALID_EMAIL}          hikakyo@gmail.com

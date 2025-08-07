@@ -1,8 +1,9 @@
 *** Settings ***
 Library     SeleniumLibrary
 
-Resource    ../Common/imports.robot
-Resource    ../../Keywords/Customer/imports.robot
+Resource    ../Common/1_BasePage.robot
+Resource    ../../Keywords/Common/1_CommonWeb.robot
+Resource    ../../Keywords/Common/3_UtilityFunction.robot
 
 *** Variables ***
 # Login Page Locators
@@ -84,7 +85,7 @@ Get Login Form Validation Messages
 Verify Remember Me Checkbox
     [Documentation]    Verify remember me checkbox functionality
     Element Should Be Visible    ${REMEMBER_ME_CHECKBOX}
-    Element Should Not Be Selected    ${REMEMBER_ME_CHECKBOX}
+    Checkbox Should Not Be Selected    ${REMEMBER_ME_CHECKBOX}
 
 Toggle Remember Me
     [Documentation]    Toggle remember me checkbox

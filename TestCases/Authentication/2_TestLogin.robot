@@ -3,10 +3,8 @@ Documentation       Script Test Login Website
 
 Library             SeleniumLibrary
 
-Resource    ../../Resources/Keywords/Common/imports.robot
-Resource    ../../Resources/Keywords/Customer/imports.robot
-Resource    ../../Resources/PageObject/Common/imports.robot
-Resource    ../../Resources/PageObject/Customer/imports.robot
+Resource            ../../Resources/PageObject/Customer/2_LoginPage.robot
+Resource            ../../Resources/Keywords/Customer/1_Authentication.robot
 
 Suite Setup         1_CommonWeb.Open Application
 Suite Teardown      1_CommonWeb.Close Application
