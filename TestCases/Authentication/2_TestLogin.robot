@@ -197,6 +197,17 @@ TC-010 - Remember Me Checkbox Functionality
     2_LoginPage.Verify Login Success
     3_UtilityFunction.Take Screenshot With Custom Name    tc010_login_success
 
+    # Step 4: Logout and navigate back to login to check if credentials are remembered
+    1_Authentication.Logout User
+    1_Authentication.Navigate To Login Page
+    3_UtilityFunction.Take Screenshot With Custom Name    tc010_back_to_login
+
+    # Step 5: Verify credentials are pre-filled
+    ${email_value}=    Get Value    ${LOGIN_EMAIL_FIELD}
+    Should Be Equal    ${email_value}    ${VALID_EMAIL}    Email should be remembered
+    Log    SUCCESS: Email is pre-filled with: ${email_value}
+    3_UtilityFunction.Take Screenshot With Custom Name    tc010_credentials_remembered
+
     Log    Remember me checkbox functionality test completed successfully
 
 # 5. Error Message Validation
