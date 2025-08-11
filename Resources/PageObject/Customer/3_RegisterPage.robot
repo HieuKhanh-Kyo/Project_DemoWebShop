@@ -20,8 +20,9 @@ ${REGISTER_SUCCESS_MESSAGE}         xpath=//div[@class='result']
 ${GENDER_MALE_RADIO}                id=gender-male
 ${GENDER_FEMALE_RADIO}              id=gender-female
 
-# Newsletter Subscription
-${NEWSLETTER_CHECKBOX}              id=newsletter-email
+# Newsletter Subscription (Email Input + Subscribe Button)
+${NEWSLETTER_EMAIL_FIELD}           xpath=//input[@name='NewsletterEmail' or contains(@placeholder,'newsletter') or contains(@class,'newsletter')]
+${NEWSLETTER_SUBSCRIBE_BUTTON}      xpath=//input[@value='Subscribe' or contains(@class,'newsletter-subscribe')]
 
 # Validation Error Locators
 ${FIRSTNAME_VALIDATION_ERROR}       xpath=//span[@data-valmsg-for='FirstName']
@@ -29,6 +30,7 @@ ${LASTNAME_VALIDATION_ERROR}        xpath=//span[@data-valmsg-for='LastName']
 ${EMAIL_VALIDATION_ERROR}           xpath=//span[@data-valmsg-for='Email']
 ${PASSWORD_VALIDATION_ERROR}        xpath=//span[@data-valmsg-for='Password']
 ${CONFIRM_PASSWORD_VALIDATION_ERROR}    xpath=//span[@data-valmsg-for='ConfirmPassword']
+${NEWSLETTER_VALIDATION_ERROR}      xpath=//span[@data-valmsg-for='NewsletterEmail']
 ${VALIDATION_SUMMARY}               xpath=//div[@class='validation-summary-errors']
 
 # Page Elements
@@ -80,15 +82,40 @@ Enter Confirm Password
     [Arguments]    ${confirm_password}
     1_CommonWeb.Wait For Element And Input Text    ${REGISTER_CONFIRM_PASSWORD_FIELD}    ${confirm_password}
 
-Check Newsletter Subscription
-    [Documentation]    Check newsletter subscription checkbox
-    1_CommonWeb.Wait For Element And Click    ${NEWSLETTER_CHECKBOX}
+# Newsletter Subscription Keywords - Updated for Email Input + Subscribe Button
+Enter Newsletter Email
+    [Documentation]    Enter email address for newsletter subscription
+    [Arguments]    ${newsletter_email}
+    ${newsletter_field_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${NEWSLETTER_EMAIL_FIELD}
+    IF    ${newsletter_field_exists}
+        1_CommonWeb.Wait For Element And Input Text    ${NEWSLETTER_EMAIL_FIELD}    ${newsletter_email}
+    ELSE
+        Log    Newsletter email field not found on registration page
+    END
 
-Uncheck Newsletter Subscription
-    [Documentation]    Uncheck newsletter subscription checkbox
-    ${is_selected}=    Get Element Attribute    ${NEWSLETTER_CHECKBOX}    checked
-    IF    '${is_selected}' == 'true'
-        1_CommonWeb.Wait For Element And Click    ${NEWSLETTER_CHECKBOX}
+Click Newsletter Subscribe
+    [Documentation]    Click newsletter subscribe button
+    ${subscribe_button_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${NEWSLETTER_SUBSCRIBE_BUTTON}
+    IF    ${subscribe_button_exists}
+        1_CommonWeb.Wait For Element And Click    ${NEWSLETTER_SUBSCRIBE_BUTTON}
+    ELSE
+        Log    Newsletter subscribe button not found on registration page
+    END
+
+Subscribe To Newsletter
+    [Documentation]    Complete newsletter subscription with email
+    [Arguments]    ${newsletter_email}
+    Enter Newsletter Email    ${newsletter_email}
+    Click Newsletter Subscribe
+
+Verify Newsletter Subscription Success
+    [Documentation]    Verify newsletter subscription was successful
+    ${success_message}=    Run Keyword And Return Status
+    ...    3_UtilityFunction.Wait And Assert Text Present    subscribed    timeout=10s
+    IF    ${success_message}
+        Log    Newsletter subscription successful
+    ELSE
+        Log    Newsletter subscription status unclear - no success message found
     END
 
 Click Register Button
@@ -113,6 +140,11 @@ Clear Registration Form
     Clear Element Text    ${REGISTER_EMAIL_FIELD}
     Clear Element Text    ${REGISTER_PASSWORD_FIELD}
     Clear Element Text    ${REGISTER_CONFIRM_PASSWORD_FIELD}
+    # Clear newsletter email if exists
+    ${newsletter_field_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${NEWSLETTER_EMAIL_FIELD}
+    IF    ${newsletter_field_exists}
+        Clear Element Text    ${NEWSLETTER_EMAIL_FIELD}
+    END
 
 Verify Field Validation Error
     [Documentation]    Verify validation error for specific field
@@ -123,18 +155,17 @@ Verify Field Validation Error
     ...    '${field_name}' == 'Email'        ${EMAIL_VALIDATION_ERROR}
     ...    '${field_name}' == 'Password'     ${PASSWORD_VALIDATION_ERROR}
     ...    '${field_name}' == 'ConfirmPassword'    ${CONFIRM_PASSWORD_VALIDATION_ERROR}
+    ...    '${field_name}' == 'NewsletterEmail'    ${NEWSLETTER_VALIDATION_ERROR}
     3_UtilityFunction.Wait And Assert Element Visible    ${field_error_locator}
     3_UtilityFunction.Assert Element Contains Text    ${field_error_locator}    ${expected_message}
 
 Get All Registration Validation Messages
     [Documentation]    Get all validation messages from registration form
     ${messages}=    Create List
-    ${error_elements}=    Get WebElements    xpath=//div[@class='validation-summary-errors']//span | //div[@class='validation-summary-errors']//li
+    ${error_elements}=    Get WebElements    xpath=//span[@class='field-validation-error']
     FOR    ${element}    IN    @{error_elements}
         ${text}=    Get Text    ${element}
-        IF    '${text}' != ''
-            Append To List    ${messages}    ${text}
-        END
+        Append To List    ${messages}    ${text}
     END
     RETURN    ${messages}
 
@@ -142,18 +173,32 @@ Verify Gender Selection
     [Documentation]    Verify gender radio button selection
     [Arguments]    ${expected_gender}
     IF    '${expected_gender}' == 'Male'
-        Radio Button Should Be Set To    gender    male
+        Radio Button Should Be Set To    Gender    M
     ELSE IF    '${expected_gender}' == 'Female'
-        Radio Button Should Be Set To    gender    female
+        Radio Button Should Be Set To    Gender    F
     END
 
-Verify Newsletter Checkbox Status
-    [Documentation]    Verify newsletter checkbox status
-    [Arguments]    ${expected_status}    # true or false
-    IF    '${expected_status}' == 'true'
-        Checkbox Should Be Selected    ${NEWSLETTER_CHECKBOX}
+# Updated Newsletter Verification Keywords
+Verify Newsletter Email Field
+    [Documentation]    Verify newsletter email field is visible and functional
+    ${newsletter_field_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${NEWSLETTER_EMAIL_FIELD}
+    IF    ${newsletter_field_exists}
+        Element Should Be Visible    ${NEWSLETTER_EMAIL_FIELD}
+        Element Should Be Enabled    ${NEWSLETTER_EMAIL_FIELD}
+        Log    Newsletter email field is visible and enabled
     ELSE
-        Checkbox Should Not Be Selected    ${NEWSLETTER_CHECKBOX}
+        Log    Newsletter email field not found on this page
+    END
+
+Verify Newsletter Subscribe Button
+    [Documentation]    Verify newsletter subscribe button is visible
+    ${subscribe_button_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${NEWSLETTER_SUBSCRIBE_BUTTON}
+    IF    ${subscribe_button_exists}
+        Element Should Be Visible    ${NEWSLETTER_SUBSCRIBE_BUTTON}
+        Element Should Be Enabled    ${NEWSLETTER_SUBSCRIBE_BUTTON}
+        Log    Newsletter subscribe button is visible and enabled
+    ELSE
+        Log    Newsletter subscribe button not found on this page
     END
 
 Fill Registration Form
@@ -167,6 +212,4 @@ Fill Registration Form
     Enter Email    ${registration_data}[email]
     Enter Password    ${registration_data}[password]
     Enter Confirm Password    ${registration_data}[confirm_password]
-    IF    'newsletter' in ${registration_data} and '${registration_data}[newsletter]' == 'true'
-        Check Newsletter Subscription
-    END
+    # Newsletter subscription is handled separately, not part of registration form

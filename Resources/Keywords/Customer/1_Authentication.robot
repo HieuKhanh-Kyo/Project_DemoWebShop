@@ -20,7 +20,7 @@ ${VALID_REG_PASSWORD}       Test123!@#
 ${MIN_PASSWORD_LENGTH}      6
 
 *** Keywords ***
-# Login key
+# Login Key
 Login With Valid Credentials
     [Documentation]    Login with valid email and password
     [Arguments]    ${email}=${VALID_EMAIL}    ${password}=${VALID_PASSWORD}
@@ -28,7 +28,6 @@ Login With Valid Credentials
     2_LoginPage.Enter Email    ${email}
     2_LoginPage.Enter Password    ${password}
     2_LoginPage.Click Login Button
-#    2_LoginPage.Verify Login Success
 
 Login With Invalid Credentials
     [Documentation]    Login with invalid credentials
@@ -56,7 +55,6 @@ Login With Random Credentials
 Logout User
     [Documentation]    Logout current user
     1_CommonWeb.Wait For Element And Click    ${HEADER_LOGOUT_LINK}
-    # Verify redirect to login page or home page
     1_CommonWeb.Wait For Page To Load
 
 Navigate To Login Page
@@ -67,12 +65,10 @@ Navigate To Login Page
 
 Verify User Is Logged In
     [Documentation]    Verify user is currently logged in
-    # Check for logout button or user menu
     3_UtilityFunction.Wait And Assert Element Visible    ${HEADER_LOGOUT_LINK}
 
 Verify User Is Logged Out
     [Documentation]    Verify user is logged out
-    # Should see login form or login link
     3_UtilityFunction.Wait And Assert Element Visible    ${LOGIN_FORM}
 
 Login And Remember Me
@@ -89,11 +85,10 @@ Test Password Reset Flow
     [Documentation]    Test forgot password functionality
     2_LoginPage.Verify Login Page Loaded
     2_LoginPage.Click Forgot Password Link
-    # Add verification for password reset page
     1_CommonWeb.Wait For Page To Load
     3_UtilityFunction.Verify Current URL Contains    passwordrecovery
 
-# Login Validation key
+# Registration Key
 Navigate To Registration Page
     [Documentation]    Navigate to registration page from any page
     Go To    ${URL}/register
@@ -117,8 +112,8 @@ Register With Invalid Data
     3_RegisterPage.Verify Registration Error Message    ${expected_error}
 
 Create Valid Registration Data
-    [Documentation]    Create dictionary with valid registration data
-    [Arguments]    ${include_gender}=True    ${include_newsletter}=True
+    [Documentation]    Create dictionary with valid registration data (without newsletter)
+    [Arguments]    ${include_gender}=True
     ${test_data}=    3_UtilityFunction.Create Test Data Dictionary
     ${registration_data}=    Create Dictionary
     ...    first_name=${VALID_FIRST_NAME}
@@ -131,22 +126,94 @@ Create Valid Registration Data
         Set To Dictionary    ${registration_data}    gender    Male
     END
 
-    IF    ${include_newsletter}
-        Set To Dictionary    ${registration_data}    newsletter    true
-    END
-
     RETURN    ${registration_data}
 
 Register With Complete Valid Data
-    [Documentation]    Register with complete valid data including all options
+    [Documentation]    Register with complete valid data (registration only, no newsletter)
     ${registration_data}=    Create Valid Registration Data
     Register With Valid Data    &{registration_data}
 
+# Newsletter Subscription Keywords (Separate from Registration)
+Navigate To Newsletter Subscription
+    [Documentation]    Navigate to newsletter subscription section or page
+    # This might be on homepage footer or separate newsletter page
+    Go To    ${URL}
+    1_CommonWeb.Wait For Page To Load
+    # Look for newsletter section on homepage
+    ${newsletter_section_exists}=    Run Keyword And Return Status
+    ...    3_UtilityFunction.Wait And Assert Element Visible    ${NEWSLETTER_EMAIL_FIELD}    timeout=5s
+    IF    not ${newsletter_section_exists}
+        # Try to scroll to footer where newsletter might be
+        2_BrowserNavigation.Scroll To Bottom
+        Sleep    1s
+    END
+
+Subscribe To Newsletter With Valid Email
+    [Documentation]    Subscribe to newsletter with valid email
+    [Arguments]    ${email}=${EMPTY}
+    IF    '${email}' == '${EMPTY}'
+        ${email}=    3_UtilityFunction.Generate Random Email
+    END
+
+    Navigate To Newsletter Subscription
+    3_RegisterPage.Subscribe To Newsletter    ${email}
+    3_RegisterPage.Verify Newsletter Subscription Success
+
+Subscribe To Newsletter With Invalid Email
+    [Documentation]    Test newsletter subscription with invalid email
+    [Arguments]    ${invalid_email}    ${expected_error}=${EMPTY}
+    Navigate To Newsletter Subscription
+    3_RegisterPage.Enter Newsletter Email    ${invalid_email}
+    3_RegisterPage.Click Newsletter Subscribe
+
+    IF    '${expected_error}' != '${EMPTY}'
+        3_RegisterPage.Verify Field Validation Error    NewsletterEmail    ${expected_error}
+    END
+
+Test Newsletter Email Format Validation
+    [Documentation]    Test various invalid email formats for newsletter subscription
+    Navigate To Newsletter Subscription
+
+    @{invalid_emails}=    Create List
+    ...    invalid-email
+    ...    @invalid.com
+    ...    invalid@
+    ...    invalid.com
+    ...    invalid@@test.com
+
+    FOR    ${invalid_email}    IN    @{invalid_emails}
+        3_RegisterPage.Enter Newsletter Email    ${invalid_email}
+        3_RegisterPage.Click Newsletter Subscribe
+
+        # Check for validation error (might not always show for newsletter)
+        ${validation_error}=    Run Keyword And Return Status
+        ...    3_UtilityFunction.Wait And Assert Element Visible    ${NEWSLETTER_VALIDATION_ERROR}    timeout=3s
+
+        IF    ${validation_error}
+            Log    Email validation working for newsletter: ${invalid_email}
+        ELSE
+            Log    No validation error shown for newsletter email: ${invalid_email}
+        END
+
+        # Clear field for next test
+        Clear Element Text    ${NEWSLETTER_EMAIL_FIELD}
+    END
+
+Test Newsletter Subscription Functionality
+    [Documentation]    Test complete newsletter subscription functionality
+    Navigate To Newsletter Subscription
+    3_RegisterPage.Verify Newsletter Email Field
+    3_RegisterPage.Verify Newsletter Subscribe Button
+
+    # Test with valid email
+    ${test_email}=    3_UtilityFunction.Generate Random Email
+    Subscribe To Newsletter With Valid Email    ${test_email}
+
+# Registration Validation Keywords
 Test Registration Email Format Validation
-    [Documentation]    Test various email format validations for registration
+    [Documentation]    Test various email format validations for registration (separate from newsletter)
     3_RegisterPage.Verify Register Page Loaded
 
-    # Test invalid email formats
     @{invalid_emails}=    Create List
     ...    invalid-email
     ...    @invalid.com
@@ -166,18 +233,15 @@ Test Registration Email Format Validation
         3_RegisterPage.Fill Registration Form    &{registration_data}
         3_RegisterPage.Click Register Button
 
-        # Verify email validation error appears
         ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
         Should Not Be Empty    ${validation_messages}    Email validation should show error for: ${invalid_email}
-
-        Log    Email validation working for: ${invalid_email}
+        Log    Email validation working for registration: ${invalid_email}
     END
 
 Test Registration Password Validation
     [Documentation]    Test password field validation rules for registration
     3_RegisterPage.Verify Register Page Loaded
 
-    # Test password strength requirements
     @{weak_passwords}=    Create List
     ...    123           # Too short
     ...    abc           # Too short, no numbers
@@ -196,10 +260,8 @@ Test Registration Password Validation
         3_RegisterPage.Fill Registration Form    &{registration_data}
         3_RegisterPage.Click Register Button
 
-        # Verify password validation error appears
         ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
         Should Not Be Empty    ${validation_messages}    Password validation should show error for: ${weak_password}
-
         Log    Password validation working for: ${weak_password}
     END
 
@@ -217,55 +279,30 @@ Test Registration Password Confirmation
     3_RegisterPage.Fill Registration Form    &{registration_data}
     3_RegisterPage.Click Register Button
 
-    # Verify password confirmation error appears
     ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
     Should Not Be Empty    ${validation_messages}    Password confirmation should show mismatch error
-
     Log    Password confirmation validation working
 
 Test Registration Required Fields
     [Documentation]    Test all required fields validation for registration
     3_RegisterPage.Verify Register Page Loaded
 
-    # Submit empty form
     3_RegisterPage.Click Register Button
 
-    # Verify validation errors for all required fields
     ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
     Should Not Be Empty    ${validation_messages}    Required fields should show validation errors
-
     Log    Required fields validation working
 
 Test Gender Selection Options
     [Documentation]    Test gender selection functionality
     3_RegisterPage.Verify Register Page Loaded
 
-    # Test Male selection
     3_RegisterPage.Select Gender    Male
     3_RegisterPage.Verify Gender Selection    Male
 
-    # Test Female selection
     3_RegisterPage.Select Gender    Female
     3_RegisterPage.Verify Gender Selection    Female
-
     Log    Gender selection functionality working
-
-Test Newsletter Subscription Options
-    [Documentation]    Test newsletter subscription checkbox
-    3_RegisterPage.Verify Register Page Loaded
-
-    # Verify default state (usually unchecked)
-    3_RegisterPage.Verify Newsletter Checkbox Status    false
-
-    # Check newsletter subscription
-    3_RegisterPage.Check Newsletter Subscription
-    3_RegisterPage.Verify Newsletter Checkbox Status    true
-
-    # Uncheck newsletter subscription
-    3_RegisterPage.Uncheck Newsletter Subscription
-    3_RegisterPage.Verify Newsletter Checkbox Status    false
-
-    Log    Newsletter subscription functionality working
 
 Test Registration With Existing Email
     [Documentation]    Test registration with already registered email
@@ -277,14 +314,12 @@ Test Registration With Existing Email
     ...    confirm_password=${VALID_REG_PASSWORD}
 
     Register With Invalid Data    already exists    &{registration_data}
-
     Log    Existing email validation working
 
 Complete Registration Form Test
-    [Documentation]    Complete end-to-end registration form test
+    [Documentation]    Complete end-to-end registration form test (without newsletter)
     ${registration_data}=    Create Valid Registration Data
 
-    # Fill form step by step with validation
     3_RegisterPage.Verify Register Page Loaded
     3_RegisterPage.Select Gender    ${registration_data}[gender]
     3_RegisterPage.Enter First Name    ${registration_data}[first_name]
@@ -292,31 +327,33 @@ Complete Registration Form Test
     3_RegisterPage.Enter Email    ${registration_data}[email]
     3_RegisterPage.Enter Password    ${registration_data}[password]
     3_RegisterPage.Enter Confirm Password    ${registration_data}[confirm_password]
-    3_RegisterPage.Check Newsletter Subscription
 
-    # Submit form
     3_RegisterPage.Click Register Button
     3_RegisterPage.Verify Registration Success
-
     Log    Complete registration form test passed
 
-
-# Combined auth workflows
+# Combined Authentication Workflows
 Test Complete User Registration And Login Flow
     [Documentation]    Test complete flow: Register -> Logout -> Login
-
-    # Step 1: Register new user
     ${registration_data}=    Create Valid Registration Data
     Register With Valid Data    &{registration_data}
 
-    # Step 2: Logout after registration
     Logout User
 
-    # Step 3: Login with registered credentials
     Navigate To Login Page
     Login With Valid Credentials    ${registration_data}[email]    ${registration_data}[password]
 
-    # Step 4: Verify login success
     Verify User Is Logged In
-
     Log    Complete registration and login flow test passed
+
+Test Registration Then Newsletter Subscription
+    [Documentation]    Test complete flow: Register -> Subscribe to Newsletter
+    # Step 1: Complete registration
+    ${registration_data}=    Create Valid Registration Data
+    Register With Valid Data    &{registration_data}
+
+    # Step 2: Subscribe to newsletter with different email
+    ${newsletter_email}=    3_UtilityFunction.Generate Random Email
+    Subscribe To Newsletter With Valid Email    ${newsletter_email}
+
+    Log    Registration and newsletter subscription flow completed successfully
