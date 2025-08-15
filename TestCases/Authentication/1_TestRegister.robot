@@ -281,6 +281,167 @@ TC-REG-014 - Complete Registration and Login Flow
 
     Log    Complete registration and login flow test completed successfully
 
+# Duplicate email
+TC-REG-015 - Registration With Existing Email Address
+    [Documentation]    Test registration fails when using already registered email
+    [Tags]    TC-REG-015    registration    negative    duplicate-email
+
+    1_Authentication.Navigate To Registration Page
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_018_start
+
+    # Use your existing email that's already registered
+    ${registration_data}=    Create Dictionary
+    ...    gender=Male
+    ...    first_name=Duplicate
+    ...    last_name=EmailTest
+    ...    email=${VALID_EMAIL}    # Using existing email from variables
+    ...    password=DuplicateTest123!
+    ...    confirm_password=DuplicateTest123!
+
+    # Should fail with appropriate error message
+    3_RegisterPage.Fill Registration Form    &{registration_data}
+    3_RegisterPage.Click Register Button
+
+    # Verify error message appears
+    ${error_found}=    Run Keyword And Return Status
+    ...    3_RegisterPage.Verify Registration Error Message    already exists
+
+    IF    not ${error_found}
+        # Check for any validation messages
+        ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+        Should Not Be Empty    ${validation_messages}    Expected error for duplicate email
+        Log    Validation messages found: ${validation_messages}
+    END
+
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_015_duplicate_error
+    Log    Duplicate email registration test completed successfully
+
+TC-REG-016 - Sequential Duplicate Email Registration
+    [Documentation]    Register user then attempt registration again with same email
+    [Tags]    TC-REG-016    registration    negative    duplicate-email
+
+    ${test_email}=    Set Variable    sequentialDuplicate004@gmail.com
+
+    # First registration - should succeed
+    1_Authentication.Navigate To Registration Page
+    ${first_registration}=    Create Dictionary
+    ...    first_name=FirstAttempt
+    ...    last_name=User
+    ...    email=${test_email}
+    ...    password=FirstAttempt123!
+    ...    confirm_password=FirstAttempt123!
+
+    1_Authentication.Register With Valid Data    &{first_registration}
+    1_Authentication.Logout User
+
+    # Second registration with same email - should fail
+    1_Authentication.Navigate To Registration Page
+    ${second_registration}=    Create Dictionary
+    ...    first_name=SecondAttempt
+    ...    last_name=User
+    ...    email=${test_email}    # Same email
+    ...    password=SecondAttempt456@
+    ...    confirm_password=SecondAttempt456@
+
+    3_RegisterPage.Fill Registration Form    &{second_registration}
+    3_RegisterPage.Click Register Button
+
+    # Should show error for duplicate email
+    ${validation_messages}=    Get Text    xpath=//div[@class='validation-summary-errors']
+    Should Not Be Empty    ${validation_messages}
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_016_sequential_duplicate
+
+    Log    Sequential duplicate email registration test completed successfully
+
+# Required field validations
+TC-REG-017 - Individual Required Field Validation
+    [Documentation]    Test validation for each required field individually
+    [Tags]    TC-REG-017    registration    negative    required-fields
+
+    # Empty First Name
+    1_Authentication.Navigate To Registration Page
+    Log    Testing empty first name validation
+
+    3_RegisterPage.Enter First Name    ${EMPTY}
+    3_RegisterPage.Enter Last Name    ValidLastName
+    3_RegisterPage.Enter Email    empty.firstname.day9@automation.test
+    3_RegisterPage.Enter Password    ValidPassword123!
+    3_RegisterPage.Enter Confirm Password    ValidPassword123!
+    3_RegisterPage.Click Register Button
+
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    First name validation should trigger
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_022_empty_firstname
+
+    # Empty Last Name
+    2_BrowserNavigation.Refresh Page
+    Log    Testing empty last name validation
+
+    3_RegisterPage.Enter First Name    ValidFirstName
+    3_RegisterPage.Enter Last Name    ${EMPTY}
+    3_RegisterPage.Enter Email    empty.lastname.day9@automation.test
+    3_RegisterPage.Enter Password    ValidPassword123!
+    3_RegisterPage.Enter Confirm Password    ValidPassword123!
+    3_RegisterPage.Click Register Button
+
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Last name validation should trigger
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_022_empty_lastname
+
+    # Empty Email
+    2_BrowserNavigation.Refresh Page
+    Log    Testing empty email validation
+
+    3_RegisterPage.Enter First Name    ValidFirstName
+    3_RegisterPage.Enter Last Name    ValidLastName
+    3_RegisterPage.Enter Email    ${EMPTY}
+    3_RegisterPage.Enter Password    ValidPassword123!
+    3_RegisterPage.Enter Confirm Password    ValidPassword123!
+    3_RegisterPage.Click Register Button
+
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Email validation should trigger
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_022_empty_email
+
+    # Empty Password
+    2_BrowserNavigation.Refresh Page
+    Log    Testing empty password validation
+
+    3_RegisterPage.Enter First Name    ValidFirstName
+    3_RegisterPage.Enter Last Name    ValidLastName
+    3_RegisterPage.Enter Email    empty.password.day9@automation.test
+    3_RegisterPage.Enter Password    ${EMPTY}
+    3_RegisterPage.Enter Confirm Password    ${EMPTY}
+    3_RegisterPage.Click Register Button
+
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Password validation should trigger
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_022_empty_password
+
+    Log    Individual required field validation tests completed successfully
+
+TC-REG-018 - Complete Empty Form Validation
+    [Documentation]    Test validation when all required fields are empty
+    [Tags]    TC-REG-018    registration    negative    required-fields
+
+    1_Authentication.Navigate To Registration Page
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_023_empty_form
+
+    # Submit completely empty form
+    3_RegisterPage.Click Register Button
+
+    # Should show multiple validation errors
+    ${validation_messages}=    3_RegisterPage.Get All Registration Validation Messages
+    Should Not Be Empty    ${validation_messages}    Multiple validation errors expected
+
+    ${error_count}=    Get Length    ${validation_messages}
+    Should Be True    ${error_count} >= 3    Expected at least 3 validation errors
+
+    Log    Found ${error_count} validation errors for empty form: ${validation_messages}
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_reg_023_all_empty_errors
+
+    Log    Complete empty form validation test completed successfully
+
 # Test newsletter
 TC-NEWSLETTER-001 - Valid Newsletter Subscription
     [Documentation]    Test successful newsletter subscription with valid email
@@ -346,3 +507,4 @@ TC-COMBINED-001 - Registration Then Newsletter Subscription
     3_UtilityFunction.Take Screenshot With Custom Name    tc_combined_001_complete_flow
 
     Log    Registration and newsletter subscription workflow completed successfully
+
