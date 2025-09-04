@@ -6,7 +6,7 @@ Resource   ../../Keywords/Common/imports.robot
 *** Variables ***
 # Header Navigation Locators
 ${HEADER_LOGO}              xpath=//div[@class='header-logo']
-${HEADER_SEARCH_BOX}        xpath=//div[@class='search-box']
+${HEADER_SEARCH_BOX}        xpath=//*[@id="small-searchterms"]
 ${HEADER_SEARCH_BUTTON}     xpath=//input[@type='submit']
 ${HEADER_LOGIN_LINK}        xpath=//a[@class='ico-login']
 ${HEADER_REGISTER_LINK}     xpath=//a[@class='ico-register']

@@ -23,7 +23,7 @@ Test Basic Navigation
     [Tags]             TestConnectivity
     2_Header.Click Login Link
     1_CommonWeb.Verify Page Title Contains    Login
-    2_BrowserNavigation.Go Back
+    2_BrowserNavigation.Go Back Page
     2_Header.Click Register Link
     1_CommonWeb.Verify Page Title Contains    Register
 

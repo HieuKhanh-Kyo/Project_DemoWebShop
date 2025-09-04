@@ -13,7 +13,7 @@ Refresh Page
     Reload Page
     Wait For Page To Load
 
-Go Back
+Go Back Page
     [Documentation]    Navigate back to previous page
     Go Back
     Wait For Page To Load
