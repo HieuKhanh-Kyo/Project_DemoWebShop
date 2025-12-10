@@ -45,13 +45,13 @@ TC-HOMEPAGE-001 - Homepage Loading and Structure
 
     Log    Empty category handling test completed successfully
 
-TC-EDGE-003 - Large Page Size Handling
+TC-EDGE-001 - Large Page Size Handling
     [Documentation]    Test handling of large page sizes and pagination edge cases
-    [Tags]    TC-EDGE-003    edge-case    pagination    large-data
+    [Tags]    TC-EDGE-001    edge-case    pagination    large-data
 
     # Step 1: Navigate to category with most products (usually Books or Computers)
     2_Product.Navigate To Product Category    Books
-    3_UtilityFunction.Take Screenshot With Custom Name    tc_edge_003_books_loaded
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_edge_001_books_loaded
 
     # Step 2: Try largest page size
     ${large_size_result}=    Run Keyword And Return Status    4_ProductListPage.Change Page Size    12
@@ -77,7 +77,7 @@ TC-EDGE-003 - Large Page Size Handling
         Should Be True    ${products_on_last_page} > 0    Last page should have products
     END
 
-    3_UtilityFunction.Take Screenshot With Custom Name    tc_edge_003_large_data_complete
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_edge_001_large_data_complete
 
     Log    Large page size handling test completed successfully
 
