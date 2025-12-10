@@ -13,15 +13,6 @@ ${PRODUCT_GRID}                xpath=//div[@class='product-grid']
 ${PRODUCT_LIST}                xpath=//div[@class='product-grid']
 ${PRODUCT_ITEMS}               xpath=//div[@class='item-box']
 
-# Individual Product Elements
-${PRODUCT_TITLE}               xpath=//h2[@class='product-title']//a
-${PRODUCT_PRICE}               xpath=//span[@class='price actual-price']
-${PRODUCT_OLD_PRICE}           xpath=//span[@class='price old-price']
-${PRODUCT_IMAGE}               xpath=//div[@class='picture']//img
-${PRODUCT_ADD_TO_CART_BUTTON}  xpath=//input[@value='Add to cart']
-${PRODUCT_ADD_TO_WISHLIST}     xpath=//input[@value='Add to wishlist']
-${PRODUCT_ADD_TO_COMPARE}      xpath=//input[@value='Add to compare list']
-
 # Category Page Elements
 ${CATEGORY_TITLE}              xpath=//div[@class='page-title']//h1
 ${CATEGORY_DESCRIPTION}        xpath=//div[@class='category-description']
@@ -40,17 +31,6 @@ ${PAGINATION_PREVIOUS}         xpath=//a[@class='previous-page']
 ${PAGINATION_NEXT}             xpath=//a[@class='next-page']
 ${PAGINATION_PAGES}            xpath=//div[@class='individual-page']//a
 ${PAGINATION_CURRENT_PAGE}     xpath=//li[@class='current-page']
-
-# Product Comparison
-${COMPARE_PRODUCTS_LINK}       xpath=//a[contains(@href,'compareproducts')]
-${COMPARE_LIST_CONTAINER}      xpath=//div[@class='compare-products-table']
-
-# Filter Options (if available)
-${FILTER_BY_PRICE}             xpath=//div[@class='filter-by-price']
-${FILTER_BY_SPECS}             xpath=//div[@class='filter-by-specs']
-${PRICE_RANGE_FROM}            xpath=//input[@id='price-range-from']
-${PRICE_RANGE_TO}              xpath=//input[@id='price-range-to']
-${FILTER_BUTTON}               xpath=//input[@value='Filter']
 
 *** Keywords ***
 # Page Verification Keywords
@@ -86,28 +66,6 @@ Get All Product Names
         Append To List    ${product_names}    ${product_name}
     END
     RETURN    ${product_names}
-
-Get All Product Prices
-    [Documentation]    Get list of all product prices on current page
-    @{product_prices}=    Create List
-    @{price_elements}=    Get WebElements    ${PRODUCT_ITEMS}//span[@class='price actual-price']
-    FOR    ${element}    IN    @{price_elements}
-        ${price}=    Get Text    ${element}
-        Append To List    ${product_prices}    ${price}
-    END
-    RETURN    ${product_prices}
-
-Get Product Details By Index
-    [Documentation]    Get product details by index (1-based)
-    [Arguments]    ${index}
-    ${name_locator}=    Set Variable    xpath=(//div[@class='item-box'])[${index}]//h2[@class='product-title']//a
-    ${price_locator}=    Set Variable    xpath=(//div[@class='item-box'])[${index}]//span[@class='price actual-price']
-
-    ${name}=    Get Text    ${name_locator}
-    ${price}=    Get Text    ${price_locator}
-
-    ${product_details}=    Create Dictionary    name=${name}    price=${price}    index=${index}
-    RETURN    ${product_details}
 
 # Product Interaction Keywords
 Click Product By Index
@@ -226,50 +184,6 @@ Get Available Page Numbers
     END
     RETURN    ${page_numbers}
 
-# Sub-category Navigation Keywords
-Get Sub Categories
-    [Documentation]    Get list of available sub-categories
-    @{sub_categories}=    Create List
-    ${sub_cat_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${SUB_CATEGORIES}
-    IF    ${sub_cat_exists}
-        @{sub_cat_elements}=    Get WebElements    ${SUB_CATEGORY_TITLE}
-        FOR    ${element}    IN    @{sub_cat_elements}
-            ${sub_cat_name}=    Get Text    ${element}
-            Append To List    ${sub_categories}    ${sub_cat_name}
-        END
-    END
-    RETURN    ${sub_categories}
-
-Click Sub Category
-    [Documentation]    Click on sub-category by name
-    [Arguments]    ${sub_category_name}
-    ${sub_cat_locator}=    Set Variable    xpath=//h2[@class='sub-category-title']//a[contains(text(),'${sub_category_name}')]
-    1_CommonWeb.Wait For Element And Click    ${sub_cat_locator}
-
-# Product Filtering Keywords (if available)
-Apply Price Filter
-    [Documentation]    Apply price range filter
-    [Arguments]    ${min_price}    ${max_price}
-    ${price_filter_exists}=    Run Keyword And Return Status    Element Should Be Visible    ${FILTER_BY_PRICE}
-    IF    ${price_filter_exists}
-        Input Text    ${PRICE_RANGE_FROM}    ${min_price}
-        Input Text    ${PRICE_RANGE_TO}    ${max_price}
-        1_CommonWeb.Wait For Element And Click    ${FILTER_BUTTON}
-        1_CommonWeb.Wait For Page To Load
-    ELSE
-        Log    Price filter not available on this category
-    END
-
-Clear All Filters
-    [Documentation]    Clear all applied filters
-    # Implementation depends on website structure
-    2_BrowserNavigation.Refresh Page
-
-# Search within Category Keywords
-Search Products In Category
-    [Documentation]    Search for products within current category
-    [Arguments]    ${search_term}
-    2_Header.Search For Product    ${search_term}
 
 # Product Verification Keywords
 Verify All Products Have Images
@@ -319,31 +233,3 @@ Test Category Navigation
 
     # Go back to first page
     Go To Page Number    1
-
-Test All Sort Options
-    [Documentation]    Test all available sort options
-    @{sort_options}=    Get List Items    ${SORT_DROPDOWN}
-    FOR    ${option}    IN    @{sort_options}
-        Log    Testing sort option: ${option}
-        Change Sort Order    ${option}
-        ${products_count}=    Get Products Count
-        Should Be True    ${products_count} > 0    No products found with sort option: ${option}
-    END
-
-Get Category Statistics
-    [Documentation]    Get statistics about current category page
-    ${product_count}=    Get Products Count
-    ${category_title}=    Get Category Title
-    ${current_page}=    Get Current Page Number
-    ${current_sort}=    Get Current Sort Order
-    ${current_page_size}=    Get Current Page Size
-
-    ${stats}=    Create Dictionary
-    ...    category=${category_title}
-    ...    products_count=${product_count}
-    ...    current_page=${current_page}
-    ...    sort_order=${current_sort}
-    ...    page_size=${current_page_size}
-
-    Log    Category Statistics: ${stats}
-    RETURN    ${stats}
