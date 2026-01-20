@@ -2,3 +2,4 @@
 
 Resource    ./1_Authentication.robot
 Resource    ./2_Product.robot
+Resource    ./3_Search.robot
