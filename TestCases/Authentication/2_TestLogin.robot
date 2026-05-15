@@ -10,6 +10,7 @@ Suite Setup         1_CommonWeb.Open Application
 Suite Teardown      1_CommonWeb.Close Application
 
 # run script: robot -d Results TestCases/Authentication/2_TestLogin.robot
+# run script: robot -d Results -i "TC-010*" TestCases/Authentication/2_TestLogin.robot
 
 *** Test Cases ***
 # 1. Invalid login
@@ -215,7 +216,7 @@ TC-LOGIN-011 - Error Message Display and Content
     1_Authentication.Navigate To Login Page
 
     # Test different error scenarios
-    1_Authentication.Login With Invalid Credentials    invalid@email.com    wrongpass    Login was unsuccessful
+    1_Authentication.Login With Invalid Credentials    invalid@gmail.com    wrongpass    Login was unsuccessful
     Element Should Be Visible    ${ERROR_MESSAGE}
 
     # Clear form and test another scenario
