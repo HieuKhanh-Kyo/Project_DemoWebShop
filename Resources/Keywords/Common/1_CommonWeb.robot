@@ -6,12 +6,32 @@ Resource   ../../../Config/imports.robot
 #Resource   ./2_BrowserNavigation.robot
 #Resource   ../../PageObject/Customer/2_LoginPage.robot
 
+
+*** Variables ***
+# Quick login credentials
+${QUICK_LOGIN_EMAIL}        hikakyo@gmail.com
+${QUICK_LOGIN_PASSWORD}     y3#B!fd$bXeMqU
+
 *** Keywords ***
 Open Application
     [Documentation]    Open browser and navigate to application
     2_BrowserConfig.Setup Browser
     Go To   ${URL}
     1_CommonWeb.Wait For Page To Load
+
+Open Application With Login
+    [Documentation]    Open browser and login immediately
+    2_BrowserConfig.Setup Browser
+    Go To   ${URL}/login
+    1_CommonWeb.Wait For Page To Load
+
+    # Quick login - hardcoded để tránh circular import
+    Input Text    id=Email    ${QUICK_LOGIN_EMAIL}
+    Input Text    id=Password    ${QUICK_LOGIN_PASSWORD}
+    Click Element    xpath=//input[@class='button-1 login-button']
+    1_CommonWeb.Wait For Page To Load
+
+    Log    Logged in with account: ${QUICK_LOGIN_EMAIL}
 
 Wait For Page To Load
     [Documentation]    Wait for page to completely load
