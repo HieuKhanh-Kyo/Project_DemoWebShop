@@ -83,8 +83,9 @@ Click Product By Name
 Add Product To Cart By Index
     [Documentation]    Add product to cart by index
     [Arguments]    ${index}
-    ${add_to_cart_locator}=    Set Variable    xpath=(//div[@class='item-box'])[${index}]//input[@value='Add to cart']
+    ${add_to_cart_locator}=    Set Variable    xpath=/html/body/div[4]/div[1]/div[4]/div[2]/div[2]/div[2]/div[3]/div[${index}]/div/div[2]/h2
     1_CommonWeb.Wait For Element And Click    ${add_to_cart_locator}
+    1_CommonWeb.Wait For Element And Click    xpath=//*[@class="button-1 add-to-cart-button"]
 
 Add Product To Wishlist By Index
     [Documentation]    Add product to wishlist by index

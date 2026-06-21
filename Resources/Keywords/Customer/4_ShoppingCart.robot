@@ -28,7 +28,7 @@ Open Shopping Cart From Header
 # Add to Cart Keywords
 Add Product To Cart From Homepage
     [Documentation]    Add featured product to cart from homepage by index
-    [Arguments]    ${product_index}=1
+    [Arguments]    ${product_index}=2
     Go To    ${URL}
     1_CommonWeb.Wait For Page To Load
 
@@ -58,8 +58,8 @@ Add Product To Cart From Search
 
     RETURN    ${first_product}
 
-Add Multiple Products To Cart
-    [Documentation]    Add multiple products to cart from homepage
+Add Multiple Products To Cart From Catalog
+    [Documentation]    Add multiple products to cart
     [Arguments]    ${number_of_products}=2
     @{added_products}=    Create List
 
@@ -71,6 +71,21 @@ Add Multiple Products To Cart
         4_ProductListPage.Add Product To Cart By Index    ${index}
         Sleep    1s
         1_HomePage.Navigate To Category    Apparel & Shoes
+    END
+
+    RETURN    ${added_products}
+
+Add Multiple Products To Cart From Homepage
+    [Documentation]    Add multiple products to cart
+    [Arguments]    ${number_of_products}=2
+    @{added_products}=    Create List
+
+    Go To    ${URL}
+    1_CommonWeb.Wait For Page To Load
+
+    FOR    ${index}    IN RANGE    2    ${number_of_products} + 1
+        4_ProductListPage.Add Product To Cart By Index    ${index}
+        Sleep    1s
     END
 
     RETURN    ${added_products}
@@ -154,7 +169,7 @@ Add Product Via Search And Verify
 Test Add Multiple Products Workflow
     [Documentation]    Test adding multiple products workflow
     [Arguments]    ${count}=3
-    ${products}=    Add Multiple Products To Cart    ${count}
+    ${products}=    Add Multiple Products To Cart From Catalog    ${count}
 
     Navigate To Shopping Cart
     Verify Multiple Products In Cart    @{products}

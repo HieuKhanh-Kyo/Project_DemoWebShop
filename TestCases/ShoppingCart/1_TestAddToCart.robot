@@ -20,7 +20,7 @@ Test Setup          Clear Cart Before Test
 Test Teardown       Take Screenshot If Test Failed
 
 # run script: robot -d Results TestCases/ShoppingCart/1_TestAddToCart.robot
-# run specific: robot -d Results -i "TC-CART-004*" TestCases/ShoppingCart/1_TestAddToCart.robot
+# run specific: robot -d Results -i "TC-CART-010*" TestCases/ShoppingCart/1_TestAddToCart.robot
 
 *** Keywords ***
 Clear Cart Before Test
@@ -65,11 +65,11 @@ TC-CART-002 - Add Product Via Search
 
     Log    Successfully added product via search: ${product_name}
 
-TC-CART-003 - Add Multiple Products From Homepage
+TC-CART-003 - Add Multiple Products From Catalog
     [Documentation]    Add multiple different products to cart
     [Tags]    TC-CART-003    cart    add-to-cart    multiple    positive
 
-    # Step 1: Add 3 products from homepage
+    # Step 1: Add 3 products from catalog
     ${products}=    4_ShoppingCart.Test Add Multiple Products Workflow    3
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_003_multiple_added
 
@@ -85,12 +85,13 @@ TC-CART-004 - Add Same Product Multiple Times
     [Tags]    TC-CART-004    cart    add-to-cart    duplicate    positive
 
     # Step 1: Add same product twice
-    ${product_info_1}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+    ${product_info_1}=    4_ShoppingCart.Add Product To Cart From Homepage    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_004_first_add
-
     Sleep    1s
-    ${product_info_2}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+
+    ${product_info_2}=    4_ShoppingCart.Add Product To Cart From Homepage    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_004_second_add
+    Sleep    3s
 
     # Step 2: Navigate to cart and verify
     4_ShoppingCart.Navigate To Shopping Cart
@@ -108,10 +109,11 @@ TC-CART-005 - Verify Product Details In Cart
     [Tags]    TC-CART-005    cart    display    verification    positive
 
     # Step 1: Add product to cart
-    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_005_product_added
 
     # Step 2: Navigate to cart
+    sleep    3s
     4_ShoppingCart.Navigate To Shopping Cart
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_005_cart_page
 
@@ -133,7 +135,7 @@ TC-CART-006 - Verify Cart Total Displayed
     [Tags]    TC-CART-006    cart    total    calculation    positive
 
     # Step 1: Add products to cart
-    ${products}=    4_ShoppingCart.Add Multiple Products To Cart    2
+    ${products}=    4_ShoppingCart.Add Multiple Products To Cart From Catalog    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_006_products_added
 
     # Step 2: Navigate to cart and verify total
@@ -167,7 +169,9 @@ TC-CART-008 - Continue Shopping From Cart
     [Tags]    TC-CART-008    cart    navigation    positive
 
     # Step 1: Add product and go to cart
-    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    2
+
+    Sleep   3s
     4_ShoppingCart.Navigate To Shopping Cart
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_008_in_cart
 
@@ -187,7 +191,7 @@ TC-CART-009 - Access Cart From Multiple Pages
     [Tags]    TC-CART-009    cart    navigation    positive
 
     # Step 1: Add product from homepage
-    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_009_added_from_home
 
     # Step 2: Navigate to search page
@@ -213,7 +217,7 @@ TC-CART-010 - Add Product Then Clear Cart
     [Tags]    TC-CART-010    cart    clear    edge-case
 
     # Step 1: Add multiple products
-    ${products}=    4_ShoppingCart.Add Multiple Products To Cart    2
+    ${products}=    4_ShoppingCart.Add Multiple Products To Cart From Catalog    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_010_products_added
 
     # Step 2: Verify products in cart
@@ -237,7 +241,7 @@ TC-CART-011 - Verify Cart Persists Across Navigation
     [Tags]    TC-CART-011    cart    persistence    positive
 
     # Step 1: Add product to cart
-    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    1
+    ${product_info}=    4_ShoppingCart.Add Product To Cart From Homepage    2
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_011_product_added
 
     # Step 2: Navigate to different pages
@@ -268,15 +272,15 @@ TC-CART-012 - Add Product From Category Page
 
     # Step 1: Navigate to category
     Go To    ${URL}
-    1_HomePage.Navigate To Category    Books
+    1_HomePage.Navigate To Category    Apparel & Shoes
     1_CommonWeb.Wait For Page To Load
-    3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_012_books_page
+    3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_012_apparel & shoes_page
 
     # Step 2: Add product from category
     ${products_available}=    4_ProductListPage.Get Products Count
     Should Be True    ${products_available} > 0    No products in category
 
-    4_ProductListPage.Add Product To Cart By Index    1
+    4_ProductListPage.Add Product To Cart By Index    2
     1_CommonWeb.Wait For Page To Load
     3_UtilityFunction.Take Screenshot With Custom Name    tc_cart_012_product_added
 

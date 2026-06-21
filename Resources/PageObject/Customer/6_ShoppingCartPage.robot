@@ -11,7 +11,7 @@ ${CART_PAGE_CONTAINER}          xpath=//div[@class='page shopping-cart-page']
 ${CART_PAGE_TITLE}              xpath=//div[@class='page-title']//h1
 ${CART_ITEMS_TABLE}             xpath=//table[@class='cart']
 
-# Cart Items - FIXED: Correct paths without xpath= prefix in variables
+# Cart Items
 ${CART_ITEM_ROWS}               //table[@class='cart']//tbody//tr[@class='cart-item-row']
 ${CART_ITEM_REMOVE_CHECKBOX}    //input[@name='removefromcart']
 ${CART_UPDATE_CART_BUTTON}      xpath=//input[@name='updatecart']
@@ -21,15 +21,15 @@ ${CART_CONTINUE_SHOPPING}       xpath=//input[@name='continueshopping']
 ${EMPTY_CART_MESSAGE}           xpath=//div[@class='order-summary-content']
 ${EMPTY_CART_TEXT}              Your Shopping Cart is empty!
 
-# Cart Item Details - FIXED: Paths relative to row
+# Cart Item Details
 ${ITEM_PRODUCT_NAME}            //a[@class='product-name']
 ${ITEM_UNIT_PRICE}              //span[@class='product-unit-price']
 ${ITEM_QUANTITY_INPUT}          //input[contains(@class,'qty-input')]
 ${ITEM_SUBTOTAL}                //span[@class='product-subtotal']
 
-# Cart Summary - FIXED: Correct locators from HTML
-${CART_TOTAL_LABEL}             xpath=//table[@class='cart-total']//td[contains(text(),'Total:')]
-${CART_TOTAL_VALUE}             xpath=//span[@class='product-price order-total']//strong
+# Cart Summary
+${CART_TOTAL_LABEL}             xpath=//table[@class='cart-total']
+${CART_TOTAL_VALUE}             xpath=/html/body/div[4]/div[1]/div[4]/div/div/div[2]/div/form/div[2]/div[2]/div[1]/table/tbody/tr[1]/td[2]/span/span
 
 # Checkout
 ${CHECKOUT_BUTTON}              xpath=//button[@id='checkout']
